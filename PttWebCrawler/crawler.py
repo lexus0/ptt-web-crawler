@@ -25,6 +25,7 @@ if sys.version_info[0] < 3:
 class PttWebCrawler(object):
 
     PTT_URL = 'https://www.ptt.cc'
+    AUTHOR_ONLY = False
 
     """docstring for PttWebCrawler"""
     def __init__(self, cmdline=None, as_lib=False):
@@ -38,6 +39,7 @@ class PttWebCrawler(object):
         group.add_argument('-i', metavar=('START_INDEX', 'END_INDEX'), type=int, nargs=2, help="Start and end index")
         group.add_argument('-a', metavar='ARTICLE_ID', help="Article ID")
         parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
+        parser.add_argument('--author-only', action='store_true', default=False)
 
         if not as_lib:
             if cmdline:
@@ -45,6 +47,7 @@ class PttWebCrawler(object):
             else:
                 args = parser.parse_args()
             board = args.b
+            self.AUTHOR_ONLY = args.author_only
             if args.i:
                 start = args.i[0]
                 if args.i[1] == -1:
@@ -79,10 +82,14 @@ class PttWebCrawler(object):
                         link = self.PTT_URL + href
                         article_id = re.sub('\.html', '', href.split('/')[-1])
                         if div == divs[-1] and i == end-start:  # last div of last page
+                            print(1)
                             self.store(filename, self.parse(link, article_id, board), 'a')
                         else:
+                            print(2)
                             self.store(filename, self.parse(link, article_id, board) + ',\n', 'a')
-                    except:
+                    except Exception as e: 
+                        print(3)
+                        print(e)
                         pass
                 time.sleep(0.1)
             self.store(filename, u']}', 'a')
@@ -95,8 +102,34 @@ class PttWebCrawler(object):
         self.store(filename, self.parse(link, article_id, board), 'w')
         return filename
 
+    def parse(self, link, article_id, board, timeout=3):
+        if self.AUTHOR_ONLY == True:
+            return self.parse_author(link, article_id, board, timeout)
+        else:
+            return self.parse_by_id(link, article_id, board, timeout)
+
     @staticmethod
-    def parse(link, article_id, board, timeout=3):
+    def parse_author(link, article_id, board, timeout=3):
+        print('Processing author:', article_id)
+        resp = requests.get(url=link, cookies={'over18': '1'}, verify=VERIFY, timeout=timeout)
+        if resp.status_code != 200:
+            print('invalid url:', resp.url)
+            return json.dumps({"error": "invalid url"}, sort_keys=True, ensure_ascii=False)
+        soup = BeautifulSoup(resp.text, 'html.parser')
+        main_content = soup.find(id="main-content")
+        metas = main_content.select('div.article-metaline')
+        author = ''
+        if metas:
+            author = metas[0].select('span.article-meta-value')[0].string if metas[0].select('span.article-meta-value')[0] else author
+        # json data
+        data = {
+            'author': author
+        }
+        print(data)
+        return json.dumps(data, sort_keys=True, ensure_ascii=False)
+
+    @staticmethod
+    def parse_by_id(link, article_id, board, timeout=3):
         print('Processing article:', article_id)
         resp = requests.get(url=link, cookies={'over18': '1'}, verify=VERIFY, timeout=timeout)
         if resp.status_code != 200:
