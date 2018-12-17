@@ -80,7 +80,13 @@ c.parse_articles(100, 200, 'PublicServan')
 ```commandline
 python test.py
 ```
-
+### 只爬發文者
+```commandline
+python ./crawler.py -i 1 2 -b MobileComm --author-only
+```
+Some authors are emtpy since there are articles that don't have header info.
+For example:
+https://www.ptt.cc/bbs/PttLifeLaw/M.1135996102.A.075.html
 ***
 
 <a name="english_desc"></a>ptt-web-crawler is a crawler for the web version of PTT, the largest online community in Taiwan. 
@@ -92,5 +98,6 @@ python test.py
       -i START_INDEX END_INDEX    Start and end index
       -a ARTICLE_ID               Article ID
       -v, --version               show program's version number and exit
+      --author-only               store author only
 
 Output would be `BOARD_NAME-START_INDEX-END_INDEX.json` (or `BOARD_NAME-ID.json`)

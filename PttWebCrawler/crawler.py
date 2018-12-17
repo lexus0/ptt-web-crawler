@@ -82,13 +82,10 @@ class PttWebCrawler(object):
                         link = self.PTT_URL + href
                         article_id = re.sub('\.html', '', href.split('/')[-1])
                         if div == divs[-1] and i == end-start:  # last div of last page
-                            print(1)
                             self.store(filename, self.parse(link, article_id, board), 'a')
                         else:
-                            print(2)
                             self.store(filename, self.parse(link, article_id, board) + ',\n', 'a')
                     except Exception as e: 
-                        print(3)
                         print(e)
                         pass
                 time.sleep(0.1)
@@ -121,6 +118,7 @@ class PttWebCrawler(object):
         author = ''
         if metas:
             author = metas[0].select('span.article-meta-value')[0].string if metas[0].select('span.article-meta-value')[0] else author
+        print("original author:", author)
         # strip nickname from author
         author = author.split(" ")[0]
         # json data
