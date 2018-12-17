@@ -121,11 +121,12 @@ class PttWebCrawler(object):
         author = ''
         if metas:
             author = metas[0].select('span.article-meta-value')[0].string if metas[0].select('span.article-meta-value')[0] else author
+        # strip nickname from author
+        author = author.split(" ")[0]
         # json data
         data = {
             'author': author
         }
-        print(data)
         return json.dumps(data, sort_keys=True, ensure_ascii=False)
 
     @staticmethod
