@@ -59,7 +59,7 @@ class PttWebCrawler(object):
                 article_id = args.a
                 self.parse_article(article_id, board)
 
-    def parse_articles(self, start, end, board, path='.', timeout=3):
+    def parse_articles(self, start, end, board, path='.', timeout=10):
             filename = board + '-' + str(start) + '-' + str(end) + '.json'
             filename = os.path.join(path, filename)
             self.store(filename, u'{"articles": [', 'w')
@@ -99,14 +99,15 @@ class PttWebCrawler(object):
         self.store(filename, self.parse(link, article_id, board), 'w')
         return filename
 
-    def parse(self, link, article_id, board, timeout=3):
+    def parse(self, link, article_id, board, timeout=10):
+        time.sleep(1)
         if self.AUTHOR_ONLY == True:
             return self.parse_author(link, article_id, board, timeout)
         else:
             return self.parse_by_id(link, article_id, board, timeout)
 
     @staticmethod
-    def parse_author(link, article_id, board, timeout=3):
+    def parse_author(link, article_id, board, timeout=10):
         print('Processing author:', article_id)
         resp = requests.get(url=link, cookies={'over18': '1'}, verify=VERIFY, timeout=timeout)
         if resp.status_code != 200:
@@ -128,7 +129,7 @@ class PttWebCrawler(object):
         return json.dumps(data, sort_keys=True, ensure_ascii=False)
 
     @staticmethod
-    def parse_by_id(link, article_id, board, timeout=3):
+    def parse_by_id(link, article_id, board, timeout=10):
         print('Processing article:', article_id)
         resp = requests.get(url=link, cookies={'over18': '1'}, verify=VERIFY, timeout=timeout)
         if resp.status_code != 200:
@@ -218,7 +219,7 @@ class PttWebCrawler(object):
         return json.dumps(data, sort_keys=True, ensure_ascii=False)
 
     @staticmethod
-    def getLastPage(board, timeout=3):
+    def getLastPage(board, timeout=10):
         content = requests.get(
             url= 'https://www.ptt.cc/bbs/' + board + '/index.html',
             cookies={'over18': '1'}, timeout=timeout
