@@ -10,12 +10,9 @@ port = 23
 '''
 host = "ptt.cc"
 port = 443
-'''
 user = raw_input("Enter your remote account: ")
 password = getpass.getpass()
-'''
-user = "kyopc"
-password = "2566353"
+ptt_id_to_query = raw_input("Enter PTT ID you want to query: ")
 match_str1 = u"註冊: ".encode("big5")
 match_str2 = u"請輸入您的密碼: ".encode("big5")
 match_str3 = u"請按任意鍵繼續".encode("big5")
@@ -65,23 +62,34 @@ tn.write("t" + "\r" + "q" + "\r")
 # entering "PTT ID"
 tn.expect([match_str5])
 print "match str5"
-tn.write("was599" + "\r")
+tn.write(ptt_id_to_query + "\r")
 
 #tn.expect([match_str6])
 result = tn.read_until(match_str6)
-result = result.decode('big5')
 print "match str6"
 tn.close()
 
+print result.decode('big5')
 
-# TODO: matching "《有效文章》"
-'''
-Let's play encoding
-'''
-'''
-use this article to see big5 in vim:
-https://blog.xuite.net/smes.pc/blog/32122095-%E8%A7%A3%E6%B1%BA+vim+%E7%9A%84%E3%80%8C%E7%B7%A8%E7%A2%BC%E3%80%8D%E5%95%8F%E9%A1%8C
-'''
-with open("ptt_id_info.txt", 'wb') as f:
-    f.write(result.encode('big5'))
-	
+ptt_id_info = u"有效文章".encode("big5")
+re_result = re.search(ptt_id_info, result)
+findall_str = "%s.*\d+.*"%ptt_id_info + u"篇".encode("big5") + ".*"
+
+article_count = -1
+split_str1 = " ".encode("big5")
+split_str2 = u"》".encode("big5")
+
+if re_result:
+    #print "==== yes ===="
+    article_count = re.findall(findall_str, result)[0].split(split_str1)[0].\
+                        split(split_str2)[1]
+else:
+    p#rint "==== no ===="
+
+try:
+    article_count = int(article_count)
+except ValueError:
+    print "article_count error: %s"%article_count
+    exit(-1)
+print "article count:",
+print article_count
