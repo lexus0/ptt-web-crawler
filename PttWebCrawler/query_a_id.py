@@ -84,7 +84,8 @@ if re_result:
     article_count = re.findall(findall_str, result)[0].split(split_str1)[0].\
                         split(split_str2)[1]
 else:
-    p#rint "==== no ===="
+    #print "==== no ===="
+    pass
 
 try:
     article_count = int(article_count)
